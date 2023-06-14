@@ -115,35 +115,121 @@ function fromJSON(proto, json) {
  */
 
 
-const cssSelectorBuilder = {
+class Check {
+  constructor(val = '') {
+    this.test = val;
+    this.id1 = false;
+    this.element1 = false;
+    this.pseudoElement1 = false;
+    this.order = [];
+  }
+
   element(value) {
-    this.element1 = value;
+    if (this.element1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    this.test += value;
+    this.element1 = true;
+    this.order.push(0);
+    this.checkOrder();
+    return this;
+  }
+
+  id(value) {
+    if (this.id1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    this.test += `#${value}`;
+    this.id1 = true;
+    this.order.push(1);
+    this.checkOrder();
+    return this;
+  }
+
+  class(value) {
+    this.test += `.${value}`;
+    this.order.push(2);
+    this.checkOrder();
+    return this;
+  }
+
+  attr(value) {
+    this.test += `[${value}]`;
+    this.order.push(3);
+    this.checkOrder();
+    return this;
+  }
+
+  pseudoClass(value) {
+    this.test += `:${value}`;
+    this.order.push(4);
+    this.checkOrder();
+    return this;
+  }
+
+  pseudoElement(value) {
+    if (this.pseudoElement1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    this.test += `::${value}`;
+    this.pseudoElement1 = true;
+    this.order.push(5);
+    this.checkOrder();
+    return this;
+  }
+
+  checkOrder() {
+    this.order.forEach((el, i) => {
+      if (el > this.order[i + 1]) {
+        throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+      }
+    });
+  }
+
+  stringify() {
+    return this.test;
+  }
+}
+
+const cssSelectorBuilder = {
+
+  element(value) {
+    return new Check().element(value);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    return new Check().id(value);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    return new Check().class(value);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    return new Check().attr(value);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    return new Check().pseudoClass(value);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    return new Check().pseudoElement(value);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    return new Check(`${selector1.stringify()} ${combinator} ${selector2.stringify()}`);
   },
 };
+// const builder = cssSelectorBuilder;
+// console.log(builder.pseudoElement('main').pseudoElement('test').stringify());
+// console.log(builder.element('main').stringify(), builder.element('amain').stringify());
+
+// console.log(builder.combine(
+//   builder.element('p').pseudoClass('focus'),
+//   '>',
+//   builder.element('a').attr('href$=".png"'),
+// ).stringify());
 
 module.exports = {
   Rectangle,
