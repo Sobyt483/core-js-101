@@ -402,11 +402,21 @@ function toNaryString(num, n) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+function getCommonDirectoryPath(pathes) {
+  const array = [...pathes].map((el) => el.split(''));
+  const stack = [];
+  const fp = array[0];
+  for (let i = 0; i < fp.length; i += 1) {
+    const item = fp[i];
+    if (array.every((el) => el[i] === item)) {
+      stack.push(item);
+    } else {
+      break;
+    }
+  }
+
+  return stack.slice(0, stack.lastIndexOf('/') + 1).join('');
 }
-
-
 /**
  * Returns the product of two specified matrixes.
  * See details: https://en.wikipedia.org/wiki/Matrix_multiplication
@@ -425,8 +435,19 @@ function getCommonDirectoryPath(/* pathes */) {
  *                         [ 6 ]]
  *
  */
-function getMatrixProduct(/* m1, m2 */) {
-  throw new Error('Not implemented');
+function getMatrixProduct(m1, m2) {
+  const resultMatrix = [];
+  for (let i = 0; i < m1.length; i += 1) {
+    resultMatrix.push([]);
+    for (let j = 0; j < m2[0].length; j += 1) {
+      let item = 0;
+      for (let n = 0; n < m2.length; n += 1) {
+        item += m1[i][n] * m2[n][j];
+      }
+      resultMatrix[i].push(item);
+    }
+  }
+  return resultMatrix;
 }
 
 
@@ -460,8 +481,31 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(p) {
+  let result;
+  for (let i = 0; i < p.length; i += 1) {
+    const itemRow = p[i][0];
+    if ([p[i][0], p[i][1], p[i][2]].every((el) => el === itemRow && itemRow !== undefined)) {
+      result = itemRow;
+      break;
+    }
+    const itemCol = p[0][i];
+    if ([p[0][i], p[1][i], p[2][i]].every((el) => el === itemCol && itemCol !== undefined)) {
+      result = itemCol;
+      break;
+    }
+  }
+  const itemColS = p[0][0];
+  if ([p[0][0], p[1][1], p[2][2]].every((el) => el === itemColS && itemColS !== undefined)) {
+    result = itemColS;
+  }
+  const itemColE = p[0][2];
+  const e = p.length - 1;
+  const arr = [p[0][e], p[1][e - 1], p[2][e - 2]];
+  if (arr.every((el) => el === itemColE && itemColE !== undefined)) {
+    result = itemColE;
+  }
+  return result;
 }
 
 
